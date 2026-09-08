@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="LeadFlash — 本地家装/水电/上门维修的 AI 线索秒回工作流。60 秒内专业回复，漏单从今晚开始停。" />
+  <title>LeadFlash — 线索 60 秒回复</title>
+  <style>
+    :root {
+      --amber: #FFB020;
+      --amber-dim: #E09A10;
+      --slate: #0F172A;
+      --slate-soft: #1E293B;
+      --muted: #64748B;
+      --line: #E2E8F0;
+      --bg: #FFFFFF;
+      --bg-alt: #F8FAFC;
+      --ok: #0F766E;
+      --radius: 12px;
+      --shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+      --max: 960px;
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      color: var(--slate);
+      background: var(--bg);
+      line-height: 1.65;
+      font-size: 16px;
+    }
+    a { color: var(--slate); text-decoration: none; }
+    img { max-width: 100%; }
+    .wrap { width: min(100% - 2rem, var(--max)); margin-inline: auto; }
+    .lang-en { display: none; }
+    body.en .lang-cn { display: none; }
+    body.en .lang-en { display: block; }
+    body.en span.lang-en { display: inline; }
+    body.en .inline-en { display: inline; }
+    .inline-en { display: none; }
+
+    /* Header */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 0; gap: 1rem;
+    }
+    .logo {
+      font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em;
+      display: flex; align-items: center; gap: 0.45rem;
+    }
+    .logo-mark {
+      width: 1.5rem; height: 1.5rem; border-radius: 6px;
+      background: linear-gradient(135deg, var(--amber), #FF6B00);
+      display: inline-block;
+      box-shadow: 0 0 0 3px rgba(255,176,32,0.25);
+    }
+    .nav-links {
+      display: flex; gap: 1.1rem; align-items: center;
+      font-size: 0.9rem; color: var(--muted); flex-wrap: wrap; justify-content: flex-end;
+    }
+    .nav-links a:hover { color: var(--slate); }
+    .lang-toggle {
+      border: 1px solid var(--line); background: var(--bg-alt);
+      border-radius: 999px; padding: 0.25rem 0.65rem;
+      font-size: 0.8rem; cursor: pointer; color: var(--slate); font-weight: 600;
+    }
+    .lang-toggle:hover { border-color: var(--amber); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 0.35rem; padding: 0.75rem 1.25rem;
+      border-radius: 999px; font-weight: 700; font-size: 0.95rem;
+      border: 2px solid transparent; cursor: pointer;
+      transition: transform 0.15s, background 0.15s, border-color 0.15s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: var(--slate); color: #fff;
+    }
+    .btn-primary:hover { background: var(--slate-soft); }
+    .btn-secondary {
+      background: transparent; border-color: var(--line); color: var(--slate);
+    }
+    .btn-secondary:hover { border-color: var(--slate); }
+    .btn-amber {
+      background: var(--amber); color: var(--slate);
+    }
+    .btn-amber:hover { background: var(--amber-dim); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.25rem; }
+
+    /* Hero */
+    .hero {
+      padding: 3.5rem 0 2.5rem;
+      background:
+        radial-gradient(ellipse 80% 60% at 90% -10%, rgba(255,176,32,0.18), transparent 55%),
+        var(--bg);
+    }
+    .eyebrow {
+      display: inline-block; font-size: 0.8rem; font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      color: var(--amber-dim); background: rgba(255,176,32,0.12);
+      padding: 0.3rem 0.7rem; border-radius: 999px; margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: clamp(1.75rem, 4.5vw, 2.55rem);
+      line-height: 1.25; letter-spacing: -0.03em; max-width: 18ch;
+    }
+    .hero-sub {
+      margin-top: 1rem; color: var(--muted); max-width: 42rem; font-size: 1.05rem;
+    }
+    .trust {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem; margin-top: 2rem;
+    }
+    .trust div {
+      background: var(--bg-alt); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 0.85rem 1rem;
+      font-size: 0.9rem; font-weight: 600;
+    }
+    .trust span { display: block; color: var(--muted); font-weight: 500; font-size: 0.8rem; margin-top: 0.2rem; }
+
+    section { padding: 3rem 0; }
+    section.alt { background: var(--bg-alt); }
+    h2 {
+      font-size: clamp(1.35rem, 3vw, 1.75rem);
+      letter-spacing: -0.02em; margin-bottom: 0.75rem;
+    }
+    .lead { color: var(--muted); max-width: 40rem; margin-bottom: 1.5rem; }
+
+    .cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: var(--bg); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow);
+    }
+    .card h3 { font-size: 1.05rem; margin-bottom: 0.4rem; }
+    .card p { color: var(--muted); font-size: 0.95rem; }
+    .card-num {
+      width: 1.75rem; height: 1.75rem; border-radius: 8px;
+      background: var(--slate); color: var(--amber);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 800; margin-bottom: 0.6rem;
+    }
+
+    .steps { display: grid; gap: 1rem; }
+    .step {
+      display: grid; grid-template-columns: auto 1fr; gap: 1rem;
+      align-items: start; background: var(--bg);
+      border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.25rem;
+    }
+    .step-badge {
+      background: rgba(255,176,32,0.15); color: var(--amber-dim);
+      font-weight: 800; font-size: 0.8rem; padding: 0.35rem 0.55rem;
+      border-radius: 8px; white-space: nowrap;
+    }
+    .note {
+      margin-top: 1.25rem; padding: 1rem 1.15rem;
+      border-left: 4px solid var(--amber); background: #FFF8EB;
+      border-radius: 0 8px 8px 0; font-size: 0.95rem; color: var(--slate-soft);
+    }
+
+    .split {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    }
+    .pill-list { list-style: none; }
+    .pill-list li {
+      padding: 0.55rem 0; border-bottom: 1px solid var(--line);
+      color: var(--muted); font-size: 0.95rem;
+    }
+    .pill-list li:last-child { border-bottom: 0; }
+    .pill-list li::before {
+      content: "✓ "; color: var(--ok); font-weight: 800;
+    }
+    .no-list li::before { content: "– "; color: var(--muted); }
+
+    .pricing {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem; align-items: stretch;
+    }
+    .price-card {
+      background: var(--bg); border: 2px solid var(--line);
+      border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column;
+    }
+    .price-card.featured {
+      border-color: var(--amber);
+      box-shadow: 0 12px 40px rgba(255,176,32,0.2);
+      position: relative;
+    }
+    .price-card.featured::before {
+      content: attr(data-badge);
+      position: absolute; top: -0.7rem; left: 1.25rem;
+      background: var(--amber); color: var(--slate);
+      font-size: 0.75rem; font-weight: 800;
+      padding: 0.2rem 0.6rem; border-radius: 999px;
+    }
+    .price { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin: 0.5rem 0 0.15rem; }
+    .price small { font-size: 0.95rem; font-weight: 600; color: var(--muted); }
+    .price-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; }
+    .price-card ul {
+      list-style: none; flex: 1; margin-bottom: 1.25rem;
+    }
+    .price-card ul li {
+      padding: 0.4rem 0; font-size: 0.92rem; color: var(--slate-soft);
+      padding-left: 1.2rem; position: relative;
+    }
+    .price-card ul li::before {
+      content: ""; position: absolute; left: 0; top: 0.75rem;
+      width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--amber);
+    }
+    .fine { font-size: 0.82rem; color: var(--muted); margin-top: 1.25rem; }
+
+    .quote {
+      background: var(--slate); color: #E2E8F0;
+      border-radius: 16px; padding: 1.75rem; font-size: 1.05rem;
+    }
+    .quote cite { display: block; margin-top: 0.85rem; color: var(--amber); font-style: normal; font-size: 0.9rem; }
+
+    .faq details {
+      border: 1px solid var(--line); border-radius: var(--radius);
+      background: var(--bg); margin-bottom: 0.65rem; padding: 0.85rem 1.1rem;
+    }
+    .faq summary {
+      cursor: pointer; font-weight: 700; list-style: none;
+      display: flex; justify-content: space-between; gap: 1rem;
+    }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; color: var(--amber-dim); font-weight: 800; }
+    .faq details[open] summary::after { content: "–"; }
+    .faq details p { margin-top: 0.65rem; color: var(--muted); font-size: 0.95rem; }
+
+    .cta-band {
+      background: linear-gradient(135deg, var(--slate) 0%, #1E293B 60%, #334155 100%);
+      color: #fff; border-radius: 20px; padding: 2rem 1.5rem; text-align: center;
+    }
+    .cta-band h2 { color: #fff; }
+    .cta-band p { color: #CBD5E1; max-width: 36rem; margin: 0.5rem auto 0; }
+
+    .waitlist {
+      margin-top: 1.5rem; background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 14px;
+      padding: 1.25rem; text-align: left; max-width: 32rem; margin-inline: auto;
+    }
+    .waitlist label { display: block; font-size: 0.85rem; color: #CBD5E1; margin-bottom: 0.35rem; font-weight: 600; }
+    .waitlist input, .waitlist select {
+      width: 100%; padding: 0.7rem 0.85rem; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2); background: rgba(15,23,42,0.5);
+      color: #fff; margin-bottom: 0.85rem; font: inherit;
+    }
+    .waitlist input::placeholder { color: #94A3B8; }
+    .form-note {
+      font-size: 0.78rem; color: #94A3B8; margin-top: 0.75rem; line-height: 1.4;
+    }
+
+    .en-block {
+      margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--line);
+    }
+    .en-block h2 { font-size: 1.35rem; }
+    .en-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem; margin-top: 1rem;
+    }
+    .en-grid div {
+      background: var(--bg-alt); border-radius: var(--radius); padding: 1rem;
+      border: 1px solid var(--line); font-size: 0.92rem; color: var(--muted);
+    }
+    .en-grid strong { display: block; color: var(--slate); margin-bottom: 0.35rem; }
+
+    footer {
+      padding: 2rem 0 2.5rem; border-top: 1px solid var(--line);
+      font-size: 0.82rem; color: var(--muted);
+    }
+    footer .legal { max-width: 48rem; }
+
+    @media (max-width: 720px) {
+      .nav-links a.hide-sm { display: none; }
+      .trust { grid-template-columns: 1fr; }
+      .split { grid-template-columns: 1fr; }
+      h1 { max-width: none; }
+      .hero { padding-top: 2.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <a class="logo" href="#top" aria-label="LeadFlash home">
+        <span class="logo-mark" aria-hidden="true"></span>
+        LeadFlash
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a class="hide-sm lang-cn" href="#problem">痛点</a>
+        <a class="hide-sm lang-en" href="#problem">Problem</a>
+        <a class="hide-sm lang-cn" href="#how">怎么做</a>
+        <a class="hide-sm lang-en" href="#how">How</a>
+        <a class="lang-cn" href="#pricing">套餐</a>
+        <a class="lang-en" href="#pricing">Pricing</a>
+        <a class="hide-sm lang-cn" href="#faq">FAQ</a>
+        <a class="hide-sm lang-en" href="#faq">FAQ</a>
+        <a class="lang-cn" href="#demo">预约演示</a>
+        <a class="lang-en" href="#demo">Book demo</a>
+        <button type="button" class="lang-toggle" id="langToggle" aria-label="Switch language">EN</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap">
+        <div class="lang-cn">
+          <span class="eyebrow">本地家装 · 水电 · 上门维修</span>
+          <h1>线索来了，60 秒内专业回复。漏单，从今晚开始停。</h1>
+          <p class="hero-sub">LeadFlash 是给本地服务老板的<strong>产品化 AI 工作流会员</strong>：把「谁回、回什么、回多快」做成固定流程。不是再塞给你一个聊天机器人玩具，是帮你把已有线索变成可跟进的预约。</p>
+          <div class="btn-row">
+            <a class="btn btn-primary" href="#demo">预约 3 分钟演示</a>
+            <a class="btn btn-secondary" href="#pricing">看套餐与价格</a>
+          </div>
+          <div class="trust">
+            <div>60 秒首响为目标<span>设计目标，非合同保证</span></div>
+            <div>人工关单，AI 守夜<span>报价与合同仍由人处理</span></div>
+            <div>固定月费，范围清晰<span>产品化会员，不无限定制</span></div>
+          </div>
+        </div>
+        <div class="lang-en">
+          <span class="eyebrow">Local renovation · Plumbing/electrical · On-site repair</span>
+          <h1>Leads answered in 60 seconds. Stop leaking jobs to faster shops.</h1>
+          <p class="hero-sub">LeadFlash is a <strong>productized AI workflow retainer</strong> for local home-service owners. We install reply + qualify + book workflows on channels you already use. Not another chatbot toy — an installed ops system.</p>
+          <div class="btn-row">
+            <a class="btn btn-primary" href="#demo">Book a 3-minute demo</a>
+            <a class="btn btn-secondary" href="#pricing">See pricing</a>
+          </div>
+          <div class="trust">
+            <div>60-second first response<span>Design goal — not a volume guarantee</span></div>
+            <div>AI nights, humans close<span>Price &amp; contracts stay human</span></div>
+            <div>Fixed monthly scope<span>Productized — not endless custom</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROBLEM -->
+    <section id="problem" class="alt">
+      <div class="wrap">
+        <div class="lang-cn">
+          <h2>你丢单，往往不是因为贵，是因为晚。</h2>
+          <p class="lead">半夜一条微信、美团一条咨询、58 一条留言——你在干活或睡觉，对面已经在问下一家。本地装修、水电、上门维修，拼的不只是手艺，是<strong>第一句回复有多快、多专业</strong>。</p>
+          <div class="cards">
+            <article class="card">
+              <div class="card-num">1</div>
+              <h3>漏接 = 漏单</h3>
+              <p>电话未接、微信已读不回、表单隔天才看到——线索默认去了反应更快的同行。</p>
+            </article>
+            <article class="card">
+              <div class="card-num">2</div>
+              <h3>话术不统一</h3>
+              <p>学徒回得随意，报价口径乱，客户觉得不专业，还没上门就流失。</p>
+            </article>
+            <article class="card">
+              <div class="card-num">3</div>
+              <h3>工具一堆，流程没有</h3>
+              <p>ChatGPT、各种客服插件装了，但没人定规则：哪些自动回、哪些必须人工、怎样接到预约。</p>
+            </article>
+          </div>
+          <p class="note">LeadFlash 不管你投不投流，先把「已经进来的线索」接住。</p>
+        </div>
+        <div class="lang-en">
+          <h2>Most jobs aren’t lost on price — they’re lost to silence.</h2>
+          <p class="lead">A WeChat / SMS / marketplace inquiry at 11pm. You’re on a job or asleep. Your competitor isn’t. Local shops win on <strong>how fast and how professional the first reply is</strong>.</p>
+          <div class="cards">
+            <article class="card">
+              <div class="card-num">1</div>
+              <h3>Missed reply = missed job</h3>
+              <p>Unanswered calls, read-but-ignored chats, forms seen next day — leads default to whoever answers first.</p>
+            </article>
+            <article class="card">
+              <div class="card-num">2</div>
+              <h3>Inconsistent scripts</h3>
+              <p>Apprentices reply casually; pricing language drifts; prospects bounce before a site visit.</p>
+            </article>
+            <article class="card">
+              <div class="card-num">3</div>
+              <h3>Tools without workflow</h3>
+              <p>ChatGPT and chat plugins exist — but nobody owns rules, escalation, or booking handoff.</p>
+            </article>
+          </div>
+          <p class="note">We don’t buy your ads. We help you catch the inbound you already have.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOLUTION + HOW -->
+    <section id="how">
+      <div class="wrap">
+        <div class="lang-cn">
+          <h2>怎么做</h2>
+          <p class="lead">我们把你的渠道（微信 / 企微 / 表单 / 公开咨询入口等）接进一套<strong>可执行的秒回工作流</strong>：模板 + 资格筛选 + 预约引导 + 每周优化。你继续靠手艺赚钱；我们帮你守住第一公里响应。</p>
+          <div class="steps">
+            <div class="step"><span class="step-badge">第 1 周</span><div><strong>摸清漏点</strong><br />盘点线索从哪来、多久回一次、最常被问的 10 个问题。一起定：60 秒内必须回什么，什么必须人工。</div></div>
+            <div class="step"><span class="step-badge">第 1–2 周</span><div><strong>上线工作流</strong><br />部署回复模板、分流规则、预约话术；接好你指定的 1–2 个主渠道（Starter）或多渠道（Growth）。上线前你审批每一句对外话术。</div></div>
+            <div class="step"><span class="step-badge">日常</span><div><strong>人机分工</strong><br />AI / 自动化：深夜与忙碌时段首响、FAQ、基础资格问题。你或店员：报价、合同、上门、投诉升级。</div></div>
+            <div class="step"><span class="step-badge">每周</span><div><strong>拧螺丝</strong><br />看回复率、预约率、卡点话术；改模板，不空谈「数字化转型」。</div></div>
+          </div>
+          <p class="note"><strong>结果导向（不保证单量）：</strong>更快首响 → 更少因沉默流失 → 更多进入「可报价/可上门」阶段。具体单量取决于你的流量与报价竞争力。</p>
+        </div>
+        <div class="lang-en">
+          <h2>How it works</h2>
+          <p class="lead">We wire your channels into an executable 60-second workflow: templates, qualification questions, booking prompts, and weekly tuning. You keep earning with craft; we protect first-response speed.</p>
+          <div class="steps">
+            <div class="step"><span class="step-badge">Week 1</span><div><strong>Map the leaks</strong><br />Where leads arrive, how long replies take, top 10 questions. Lock what must answer in 60s vs what stays human.</div></div>
+            <div class="step"><span class="step-badge">Weeks 1–2</span><div><strong>Launch the workflow</strong><br />Templates, routing, booking scripts on 1–2 channels (Starter) or multi-channel (Growth). You approve every outward line before go-live.</div></div>
+            <div class="step"><span class="step-badge">Daily</span><div><strong>Human + AI boundary</strong><br />Automation: nights/busy hours, FAQ, qualify. Humans: price, contracts, on-site, complaints.</div></div>
+            <div class="step"><span class="step-badge">Weekly</span><div><strong>Tighten the screws</strong><br />Reply rate, book rate, stuck phrases — iterate templates, skip buzzwords.</div></div>
+          </div>
+          <p class="note"><strong>Outcome focus (no job-volume guarantee):</strong> Faster first reply → fewer silence losses → more leads reach quote/visit stage. Volume still depends on your traffic and pricing.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOR / NOT FOR -->
+    <section class="alt" id="fit">
+      <div class="wrap">
+        <div class="lang-cn">
+          <h2>为谁而做 / 不为谁</h2>
+          <div class="split" style="margin-top:1rem">
+            <div class="card">
+              <h3>适合</h3>
+              <ul class="pill-list">
+                <li>本地装修、水电、上门维修，已有自然咨询或平台线索</li>
+                <li>老板或店长愿意每周花一点时间看报告、改口径</li>
+                <li>希望固定月费、范围清楚，而不是无无期定制外包</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>不适合</h3>
+              <ul class="pill-list no-list">
+                <li>只要我们「保证每月带来 X 条付费线索」</li>
+                <li>需要大型全国连锁 CRM / 复杂定制开发</li>
+                <li>希望完全无人、AI 自动签合同收款（不安全，也不做）</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="lang-en">
+          <h2>Who it’s for / not for</h2>
+          <div class="split" style="margin-top:1rem">
+            <div class="card">
+              <h3>Good fit</h3>
+              <ul class="pill-list">
+                <li>Local reno, plumbing/electrical, on-site repair with existing inbound</li>
+                <li>Owner/manager willing to review weekly and tweak scripts</li>
+                <li>Wants fixed monthly scope — not endless custom agency work</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Not a fit</h3>
+              <ul class="pill-list no-list">
+                <li>Needs a guaranteed paid-lead volume every month</li>
+                <li>Needs national-chain CRM or heavy custom software</li>
+                <li>Wants fully autonomous AI that signs contracts and takes payment</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing">
+      <div class="wrap">
+        <div class="lang-cn">
+          <h2>套餐定价</h2>
+          <p class="lead">按月订阅，可先演示再决定。报价默认按你所在市场选 ¥ 或 $。</p>
+        </div>
+        <div class="lang-en">
+          <h2>Pricing</h2>
+          <p class="lead">Monthly subscription. Demo first. Quote in ¥ or $ for your market.</p>
+        </div>
+        <div class="pricing">
+          <article class="price-card">
+            <div class="lang-cn"><strong>Starter</strong></div>
+            <div class="lang-en"><strong>Starter</strong></div>
+            <div class="price">$500 <small>/ mo</small></div>
+            <div class="price-sub">或 ¥3500 / 月 · <span class="lang-cn">个人师傅、小团队</span><span class="lang-en">Solo / small team</span></div>
+            <ul class="lang-cn">
+              <li>1–2 个主渠道接入与秒回工作流</li>
+              <li>行业话术模板（装修/水电/维修可切换）</li>
+              <li>资格筛选问题 + 预约引导话术</li>
+              <li>上线前话术审批</li>
+              <li>每周一次优化通话 / 文字复盘（约 30 分钟）</li>
+            </ul>
+            <ul class="lang-en">
+              <li>1–2 primary channels + 60s workflow</li>
+              <li>Vertical reply templates</li>
+              <li>Qualify questions + booking prompts</li>
+              <li>Script approval before go-live</li>
+              <li>Weekly ~30 min tune-up</li>
+            </ul>
+            <a class="btn btn-secondary" href="#demo"><span class="lang-cn">选 Starter，预约演示</span><span class="lang-en">Choose Starter — book demo</span></a>
+          </article>
+          <article class="price-card featured" data-badge="Growth">
+            <div class="lang-cn"><strong>Growth</strong></div>
+            <div class="lang-en"><strong>Growth</strong></div>
+            <div class="price">$1000 <small>/ mo</small></div>
+            <div class="price-sub">或 ¥7000 / 月 · <span class="lang-cn">有门店 / 多人接待</span><span class="lang-en">Shop / multi-staff front desk</span></div>
+            <ul class="lang-cn">
+              <li>含 Starter 全部</li>
+              <li>多渠道覆盖与统一口径</li>
+              <li>回复话术 A/B 测试</li>
+              <li>简单转化漏斗记录（首响→预约→上门）</li>
+              <li>每月一页效果摘要 + 优先排期</li>
+            </ul>
+            <ul class="lang-en">
+              <li>Everything in Starter</li>
+              <li>Multi-channel + unified voice</li>
+              <li>Reply A/B tests</li>
+              <li>Simple funnel log (reply → book → visit)</li>
+              <li>Monthly one-pager + priority iteration</li>
+            </ul>
+            <a class="btn btn-amber" href="#demo"><span class="lang-cn">选 Growth，预约演示</span><span class="lang-en">Choose Growth — book demo</span></a>
+          </article>
+        </div>
+        <p class="fine lang-cn">定制开发、代投广告、代运营内容账号不在套餐内，可另议。不保证线索量或营收。</p>
+        <p class="fine lang-en">Custom software, ad buying, and content ops are out of scope (separately quoteable). No guaranteed lead volume or revenue.</p>
+      </div>
+    </section>
+
+    <!-- SOCIAL PROOF — DEMO PLACEHOLDER (no invented customer names/metrics) -->
+    <section class="alt" id="proof">
+      <div class="wrap">
+        <div class="quote lang-cn">
+          <strong style="color:var(--amber);display:block;margin-bottom:0.5rem">演示占位 · DEMO PLACEHOLDER</strong>
+          冷启动阶段暂无公开客户案例。预约演示可看<strong>真实流程录屏</strong>：线索进线 → 60 秒首响 → 资格问题 → 预约待确认。不编造客户名、不编造成交数据。
+          <cite>替换规则：有真实可授权案例后再放证言；此前保持本区为流程演示说明。</cite>
+        </div>
+        <div class="quote lang-en">
+          <strong style="color:var(--amber);display:block;margin-bottom:0.5rem">DEMO PLACEHOLDER</strong>
+          No public customer case studies yet. Book a demo to watch a <strong>screen-recorded workflow</strong>: inbound → ~60s first reply → qualify → book-for-confirm. We do not invent names or metrics.
+          <cite>Replace this block only with authorized real cases.</cite>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq">
+      <div class="wrap">
+        <h2 class="lang-cn">常见问题</h2>
+        <h2 class="lang-en">FAQ</h2>
+        <div class="faq lang-cn" style="margin-top:1rem">
+          <details>
+            <summary>会不会让客户知道是 AI？</summary>
+            <p>默认建议披露「助手先回复，师傅稍后确认」，尤其是涉及上门时间与收费。话术你审批，我们不伪装持证师傅本人。</p>
+          </details>
+          <details>
+            <summary>能不能保证每个月多接多少单？</summary>
+            <p>不能。我们提升的是响应速度与跟进纪律。线索量和成交价仍取决于你的流量、口碑与报价。</p>
+          </details>
+          <details>
+            <summary>我们没怎么投广告，有用吗？</summary>
+            <p>有。只要你已有微信咨询、电话、平台留言或公开帖互动，秒回就能减少浪费。没有流量时，我们不假装能「凭空造线索」。</p>
+          </details>
+          <details>
+            <summary>和直接买一个 chatbot 有什么区别？</summary>
+            <p>Chatbot 是工具；LeadFlash 是产品化会员——行业模板、规则、每周优化、人机边界。你买的是「跑起来的工作流」，不是登录账号自己摸索。</p>
+          </details>
+          <details>
+            <summary>数据安全吗？</summary>
+            <p>只处理你授权渠道里的咨询内容，用于回复与优化。不做非法爬取私域、不卖你的客户名单。</p>
+          </details>
+          <details>
+            <summary>签约多久？怎么停？</summary>
+            <p>按月。演示满意再开。停止方式在合同里写清（按月可停，具体以协议为准）。</p>
+          </details>
+          <details>
+            <summary>覆盖哪些城市？</summary>
+            <p>远程交付，不限城市。本地上门的服务半径由你自己的业务决定，我们帮你在话术里问清区域是否可接。</p>
+          </details>
+        </div>
+        <div class="faq lang-en" style="margin-top:1rem">
+          <details>
+            <summary>Will customers know it’s AI?</summary>
+            <p>We recommend disclosing “assistant replies first; tech confirms shortly,” especially for scheduling and money. You approve scripts; we don’t impersonate a licensed contractor.</p>
+          </details>
+          <details>
+            <summary>Can you guarantee more jobs per month?</summary>
+            <p>No. We improve response speed and follow-up discipline. Volume and close price still depend on your traffic, reputation, and pricing.</p>
+          </details>
+          <details>
+            <summary>We barely run ads — is this useful?</summary>
+            <p>Yes, if you already get chats, calls, marketplace messages, or public post inquiries. We don’t pretend to conjure leads from zero traffic.</p>
+          </details>
+          <details>
+            <summary>How is this different from buying a chatbot?</summary>
+            <p>A chatbot is a tool. LeadFlash is a productized retainer: vertical templates, rules, weekly optimization, human boundaries — a running workflow, not a login to figure out alone.</p>
+          </details>
+          <details>
+            <summary>Is data safe?</summary>
+            <p>We only process inquiries on channels you authorize, for reply and optimization. No illegal private-group scraping; we don’t sell your customer list.</p>
+          </details>
+          <details>
+            <summary>Contract length / cancel?</summary>
+            <p>Month-to-month after a demo. Cancel terms go in the agreement.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA + WAITLIST -->
+    <section id="demo">
+      <div class="wrap">
+        <div class="cta-band">
+          <div class="lang-cn">
+            <h2>今晚开始，让线索先被接住。</h2>
+            <p>3 分钟演示：看一条模拟线索如何在 60 秒内得到专业回复，并进入预约。带上你现在用的渠道即可。</p>
+          </div>
+          <div class="lang-en">
+            <h2>Start tonight: catch the lead first.</h2>
+            <p>3-minute demo: one simulated lead, professional reply in ~60 seconds, pushed to booking. Bring the channel you already use.</p>
+          </div>
+
+          <!-- TEMP NOTE: Form does NOT submit yet.
+               Jack must connect Formspree / Tally / own backend before public launch.
+               action="#" method="get" is intentional — fields ready; no server write until wired. -->
+          <form class="waitlist" action="#" method="get" id="waitlistForm" onsubmit="return handleWaitlist(event)">
+            <label for="wl-name"><span class="lang-cn">称呼 / 店名</span><span class="lang-en">Name / shop</span></label>
+            <input id="wl-name" name="name" type="text" required placeholder="张师傅 / XX 水电" autocomplete="organization" />
+
+            <label for="wl-city"><span class="lang-cn">城市</span><span class="lang-en">City</span></label>
+            <input id="wl-city" name="city" type="text" placeholder="上海 / Austin" />
+
+            <label for="wl-channel"><span class="lang-cn">主线索渠道</span><span class="lang-en">Primary lead channel</span></label>
+            <select id="wl-channel" name="channel">
+              <option value="wechat">微信 / WeChat</option>
+              <option value="phone">电话 / Phone</option>
+              <option value="meituan">美团 / marketplace</option>
+              <option value="form">表单 / Web form</option>
+              <option value="other">其他 / Other</option>
+            </select>
+
+            <label for="wl-interest"><span class="lang-cn">兴趣套餐</span><span class="lang-en">Interest</span></label>
+            <select id="wl-interest" name="interest">
+              <option value="starter">Starter · $500 / ¥3500</option>
+              <option value="growth">Growth · $1000 / ¥7000</option>
+              <option value="pack">$49 Pack / 数字包</option>
+              <option value="unsure">不确定 / Not sure</option>
+            </select>
+
+            <label for="wl-contact"><span class="lang-cn">联系方式（微信或邮箱）</span><span class="lang-en">Contact (WeChat or email)</span></label>
+            <input id="wl-contact" name="contact" type="text" required placeholder="WeChat ID / you@email.com" autocomplete="email" />
+
+            <button type="submit" class="btn btn-amber" style="width:100%">
+              <span class="lang-cn">预约 3 分钟演示</span>
+              <span class="lang-en">Book 3-minute demo</span>
+            </button>
+            <p class="form-note lang-cn" style="color:var(--amber)">
+              <strong>TEMP：表单目前不会真正提交</strong>（action="#" method="get"）。正式上线前请 Jack 接入 Formspree / Tally / 自建后端。
+            </p>
+            <p class="form-note lang-en" style="color:var(--amber)">
+              <strong>TEMP: form does not submit yet</strong> (action="#" method="get"). Jack must connect Formspree / Tally / backend before public launch.
+            </p>
+            <p id="formMsg" class="form-note" style="display:none;color:var(--amber)" role="status"></p>
+          </form>
+        </div>
+
+        <!-- Always-visible EN short block when CN primary (toggle still available) -->
+        <div class="en-block lang-cn" id="en-summary">
+          <h2>English summary</h2>
+          <p class="lead" style="margin-bottom:0.5rem">LeadFlash — AI lead-response workflows for local home services. Reply in 60 seconds. Stop leaking jobs. Productized retainer — not a DIY chatbot.</p>
+          <div class="en-grid">
+            <div><strong>Starter</strong>$500/mo or ¥3500/mo · 1–2 channels, templates, weekly tune-up</div>
+            <div><strong>Growth</strong>$1000/mo or ¥7000/mo · multi-channel, A/B replies, monthly snapshot</div>
+            <div><strong>Boundary</strong>AI first reply under approved scripts; humans close money. No guaranteed job volume.</div>
+            <div><strong>CTA</strong><a href="#demo">Book a 3-minute live demo</a> · <button type="button" class="lang-toggle" onclick="setLang('en')" style="margin-left:0.25rem">Full EN page</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p style="font-weight:700;color:var(--slate);margin-bottom:0.5rem">LeadFlash · <span class="lang-cn">线索 60 秒回复</span><span class="lang-en">Leads answered in 60 seconds</span></p>
+      <p class="legal lang-cn">LeadFlash 提供营销与客户响应工作流服务，不替代需持证的工程、设计或施工责任。请勿利用本服务发送垃圾信息或虚假宣传。不承诺营收、线索量或回本周期。</p>
+      <p class="legal lang-en">LeadFlash provides marketing and customer-response workflow services. It does not replace licensed engineering, design, or construction responsibility. Do not use this service for spam or false claims. No revenue, lead-volume, or ROI guarantees.</p>
+      <p style="margin-top:1rem">© 2026 LeadFlash · Brand provisional</p>
+    </div>
+  </footer>
+
+  <script>
+    function setLang( wh ) {
+      var en = wh === 'en';
+      document.body.classList.toggle('en', en);
+      var btn = document.getElementById('langToggle');
+      if (btn) btn.textContent = en ? '中文' : 'EN';
+      try { localStorage.setItem('lf-lang', en ? 'en' : 'cn'); } catch (e) {}
+    }
+    (function initLang() {
+      var saved = null;
+      try { saved = localStorage.getItem('lf-lang'); } catch (e) {}
+      setLang(saved === 'en' ? 'en' : 'cn');
+      var btn = document.getElementById('langToggle');
+      if (btn) btn.addEventListener('click', function () {
+        setLang(document.body.classList.contains('en') ? 'cn' : 'en');
+      });
+      if (location.hash === '#waitlist') {
+        var el = document.getElementById('demo');
+        if (el) el.scrollIntoView();
+      }
+    })();
+    function handleWaitlist(e) {
+      e.preventDefault();
+      var msg = document.getElementById('formMsg');
+      var isEn = document.body.classList.contains('en');
+      msg.style.display = 'block';
+      msg.textContent = isEn
+        ? 'TEMP: form does not submit yet. Fields captured in this browser only — Jack must connect Formspree/backend before public launch.'
+        : 'TEMP：表单尚未真正提交。字段仅在本页提示，Jack 需接入 Formspree/后端后才能正式收集预约。';
+      return false;
+    }
+  </script>
+</body>
+</html>
