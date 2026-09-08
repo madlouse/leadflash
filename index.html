@@ -262,21 +262,24 @@
     .cta-band h2 { color: #fff; }
     .cta-band p { color: #CBD5E1; max-width: 36rem; margin: 0.5rem auto 0; }
 
-    .waitlist {
-      margin-top: 1.5rem; background: rgba(255,255,255,0.06);
+    .demo-actions {
+      margin-top: 1.5rem; display: grid; gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      max-width: 40rem; margin-inline: auto; text-align: left;
+    }
+    .demo-card {
+      background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.12); border-radius: 14px;
-      padding: 1.25rem; text-align: left; max-width: 32rem; margin-inline: auto;
+      padding: 1.25rem; display: flex; flex-direction: column; gap: 0.65rem;
     }
-    .waitlist label { display: block; font-size: 0.85rem; color: #CBD5E1; margin-bottom: 0.35rem; font-weight: 600; }
-    .waitlist input, .waitlist select {
-      width: 100%; padding: 0.7rem 0.85rem; border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.2); background: rgba(15,23,42,0.5);
-      color: #fff; margin-bottom: 0.85rem; font: inherit;
-    }
-    .waitlist input::placeholder { color: #94A3B8; }
+    .demo-card h3 { color: #fff; font-size: 1.05rem; margin: 0; }
+    .demo-card p { color: #CBD5E1; font-size: 0.9rem; margin: 0; line-height: 1.45; }
+    .demo-card .btn { width: 100%; text-align: center; margin-top: auto; }
     .form-note {
       font-size: 0.78rem; color: #94A3B8; margin-top: 0.75rem; line-height: 1.4;
+      max-width: 40rem; margin-inline: auto;
     }
+    .form-note strong { color: var(--amber); }
 
     .en-block {
       margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--line);
@@ -323,8 +326,8 @@
         <a class="lang-en" href="#pricing">Pricing</a>
         <a class="hide-sm lang-cn" href="#faq">FAQ</a>
         <a class="hide-sm lang-en" href="#faq">FAQ</a>
-        <a class="lang-cn" href="#demo">预约演示</a>
-        <a class="lang-en" href="#demo">Book demo</a>
+        <a class="lang-cn" href="#demo">看演示 / 请求演示</a>
+        <a class="lang-en" href="#demo">Watch / request demo</a>
         <button type="button" class="lang-toggle" id="langToggle" aria-label="Switch language">EN</button>
       </nav>
     </div>
@@ -339,7 +342,7 @@
           <h1>线索来了，60 秒内专业回复。漏单，从今晚开始停。</h1>
           <p class="hero-sub">LeadFlash 是给本地服务老板的<strong>产品化 AI 工作流会员</strong>：把「谁回、回什么、回多快」做成固定流程。不是再塞给你一个聊天机器人玩具，是帮你把已有线索变成可跟进的预约。</p>
           <div class="btn-row">
-            <a class="btn btn-primary" href="#demo">预约 3 分钟演示</a>
+            <a class="btn btn-primary" href="#demo">看演示 / 请求演示</a>
             <a class="btn btn-secondary" href="#pricing">看套餐与价格</a>
           </div>
           <div class="trust">
@@ -353,7 +356,7 @@
           <h1>Leads answered in 60 seconds. Stop leaking jobs to faster shops.</h1>
           <p class="hero-sub">LeadFlash is a <strong>productized AI workflow retainer</strong> for local home-service owners. We install reply + qualify + book workflows on channels you already use. Not another chatbot toy — an installed ops system.</p>
           <div class="btn-row">
-            <a class="btn btn-primary" href="#demo">Book a 3-minute demo</a>
+            <a class="btn btn-primary" href="#demo">Watch or request demo</a>
             <a class="btn btn-secondary" href="#pricing">See pricing</a>
           </div>
           <div class="trust">
@@ -526,7 +529,7 @@
               <li>Script approval before go-live</li>
               <li>Weekly ~30 min tune-up</li>
             </ul>
-            <a class="btn btn-secondary" href="#demo"><span class="lang-cn">选 Starter，预约演示</span><span class="lang-en">Choose Starter — book demo</span></a>
+            <a class="btn btn-secondary" href="#demo"><span class="lang-cn">选 Starter — 看演示</span><span class="lang-en">Choose Starter — see demo</span></a>
           </article>
           <article class="price-card featured" data-badge="Growth">
             <div class="lang-cn"><strong>Growth</strong></div>
@@ -549,7 +552,7 @@
               <li>Simple funnel log (reply → book → visit)</li>
               <li>Monthly one-pager + priority iteration</li>
             </ul>
-            <a class="btn btn-amber" href="#demo"><span class="lang-cn">选 Growth，预约演示</span><span class="lang-en">Choose Growth — book demo</span></a>
+            <a class="btn btn-amber" href="#demo"><span class="lang-cn">选 Growth — 看演示</span><span class="lang-en">Choose Growth — see demo</span></a>
           </article>
         </div>
         <p class="fine lang-cn">定制开发、代投广告、代运营内容账号不在套餐内，可另议。不保证线索量或营收。</p>
@@ -562,12 +565,12 @@
       <div class="wrap">
         <div class="quote lang-cn">
           <strong style="color:var(--amber);display:block;margin-bottom:0.5rem">演示占位 · DEMO PLACEHOLDER</strong>
-          冷启动阶段暂无公开客户案例。预约演示可看<strong>真实流程录屏</strong>：线索进线 → 60 秒首响 → 资格问题 → 预约待确认。不编造客户名、不编造成交数据。
+          冷启动阶段暂无公开客户案例。看演示可了解<strong>沙盒流程录屏</strong>：线索进线 → 60 秒首响 → 资格问题 → 预约待确认。不编造客户名、不编造成交数据。
           <cite>替换规则：有真实可授权案例后再放证言；此前保持本区为流程演示说明。</cite>
         </div>
         <div class="quote lang-en">
           <strong style="color:var(--amber);display:block;margin-bottom:0.5rem">DEMO PLACEHOLDER</strong>
-          No public customer case studies yet. Book a demo to watch a <strong>screen-recorded workflow</strong>: inbound → ~60s first reply → qualify → book-for-confirm. We do not invent names or metrics.
+          No public customer case studies yet. Watch the demo for a <strong>sandbox screen-recorded workflow</strong>: inbound → ~60s first reply → qualify → book-for-confirm. We do not invent names or metrics.
           <cite>Replace this block only with authorized real cases.</cite>
         </div>
       </div>
@@ -637,61 +640,46 @@
       </div>
     </section>
 
-    <!-- FINAL CTA + WAITLIST -->
+    <!-- FINAL CTA: honest demo (no fake booking form) — see ops/landing-demo-cta-fix.md -->
     <section id="demo">
       <div class="wrap">
         <div class="cta-band">
           <div class="lang-cn">
             <h2>今晚开始，让线索先被接住。</h2>
-            <p>3 分钟演示：看一条模拟线索如何在 60 秒内得到专业回复，并进入预约。带上你现在用的渠道即可。</p>
+            <p>先看<strong>沙盒演示录屏</strong>（模拟家装线索收件箱 → 约 60 秒 AI 草稿 → 人工确认 → 发送）。这不是接你真实客户的电话/WhatsApp——渠道要等签约后授权接入。需要真人讲解再约 <strong>15 分钟</strong>线上会（Google Meet / Zoom）。</p>
           </div>
           <div class="lang-en">
             <h2>Start tonight: catch the lead first.</h2>
-            <p>3-minute demo: one simulated lead, professional reply in ~60 seconds, pushed to booking. Bring the channel you already use.</p>
+            <p>Watch a <strong>sandbox</strong> walkthrough first (fake home-service lead inbox → ~60s AI draft → human approve → send). This is <strong>not</strong> live phone/WhatsApp on your real leads — those connect only after you authorize channels post-signup. Want a human? Request a <strong>15-minute</strong> Google Meet / Zoom.</p>
           </div>
 
-          <!-- TEMP NOTE: Form does NOT submit yet.
-               Jack must connect Formspree / Tally / own backend before public launch.
-               action="#" method="get" is intentional — fields ready; no server write until wired. -->
-          <form class="waitlist" action="#" method="get" id="waitlistForm" onsubmit="return handleWaitlist(event)">
-            <label for="wl-name"><span class="lang-cn">称呼 / 店名</span><span class="lang-en">Name / shop</span></label>
-            <input id="wl-name" name="name" type="text" required placeholder="张师傅 / XX 水电" autocomplete="organization" />
+          <div class="demo-actions">
+            <div class="demo-card" id="demo-video">
+              <h3 class="lang-cn">观看 3 分钟沙盒演示</h3>
+              <h3 class="lang-en">Watch the 3-min sandbox demo</h3>
+              <p class="lang-cn">按演示脚本走一遍：进线 → 草稿 → 审批 → 发送 → 待确认预约。录屏发布前按钮会停在说明区。</p>
+              <p class="lang-en">Same path as our demo script: inbound → draft → approve → send → pending book. Until the recording is published, the button stays on this placeholder.</p>
+              <!-- Jack: replace href with ⟦DEMO_VIDEO_URL⟧ when Loom/YouTube/Bilibili is ready -->
+              <a class="btn btn-primary" href="#demo-video-pending"><span class="lang-cn">观看演示录屏</span><span class="lang-en">Watch demo video</span></a>
+              <p class="form-note lang-cn" id="demo-video-pending" style="margin-top:0.25rem;color:var(--amber)"><strong>录屏制作中。</strong>发请求后我们会把链接发你；或先约线上会看现场沙盒。</p>
+              <p class="form-note lang-en" style="margin-top:0.25rem;color:var(--amber)"><strong>Recording not published yet.</strong> Request a demo and we’ll send the link — or book a live sandbox session.</p>
+            </div>
+            <div class="demo-card" id="demo-live">
+              <h3 class="lang-cn">请求 15 分钟线上演示</h3>
+              <h3 class="lang-en">Request a 15-min live demo</h3>
+              <p class="lang-cn">日历（Cal.com / Calendly）上线前：用邮件把请求发给我们，人工回信约 Meet/Zoom。不要期待本页自动「预约成功」。</p>
+              <p class="lang-en">Until Cal.com/Calendly is live: email us a request and we reply to schedule Meet/Zoom. This page does not auto-book.</p>
+              <!-- Jack: set ⟦JACK_EMAIL⟧ below. When Cal exists, swap href to ⟦CAL_URL⟧ and button label to 打开日历预约 / Open calendar to book. -->
+              <a class="btn btn-amber" href="mailto:⟦JACK_EMAIL⟧?subject=LeadFlash%20demo%20request%20%2F%20%E6%BC%94%E7%A4%BA%E8%AF%B7%E6%B1%82&body=Shop%20%2F%20%E5%BA%97%E5%90%8D%3A%0ACity%20%2F%20%E5%9F%8E%E5%B8%82%3A%0APrimary%20channel%20%2F%20%E4%B8%BB%E6%B8%A0%E9%81%93%20(form%20%2F%20email%20%2F%20SMS%20%2F%20WhatsApp%20%2F%20other)%3A%0AInterest%3A%20Starter%20%2F%20Growth%20%2F%20%2449%20pack%20%2F%20unsure%0APreferred%20times%20(Asia%2FShanghai)%3A%0ANotes%3A"><span class="lang-cn">发送演示请求</span><span class="lang-en">Send demo request</span></a>
+            </div>
+          </div>
 
-            <label for="wl-city"><span class="lang-cn">城市</span><span class="lang-en">City</span></label>
-            <input id="wl-city" name="city" type="text" placeholder="上海 / Austin" />
-
-            <label for="wl-channel"><span class="lang-cn">主线索渠道</span><span class="lang-en">Primary lead channel</span></label>
-            <select id="wl-channel" name="channel">
-              <option value="wechat">微信 / WeChat</option>
-              <option value="phone">电话 / Phone</option>
-              <option value="meituan">美团 / marketplace</option>
-              <option value="form">表单 / Web form</option>
-              <option value="other">其他 / Other</option>
-            </select>
-
-            <label for="wl-interest"><span class="lang-cn">兴趣套餐</span><span class="lang-en">Interest</span></label>
-            <select id="wl-interest" name="interest">
-              <option value="starter">Starter · $500 / ¥3500</option>
-              <option value="growth">Growth · $1000 / ¥7000</option>
-              <option value="pack">$49 Pack / 数字包</option>
-              <option value="unsure">不确定 / Not sure</option>
-            </select>
-
-            <label for="wl-contact"><span class="lang-cn">联系方式（微信或邮箱）</span><span class="lang-en">Contact (WeChat or email)</span></label>
-            <input id="wl-contact" name="contact" type="text" required placeholder="WeChat ID / you@email.com" autocomplete="email" />
-
-            <button type="submit" class="btn btn-amber" style="width:100%">
-              <span class="lang-cn">预约 3 分钟演示</span>
-              <span class="lang-en">Book 3-minute demo</span>
-            </button>
-            <p class="form-note lang-cn" style="color:var(--amber)">
-              <strong>TEMP：表单目前不会真正提交</strong>（action="#" method="get"）。正式上线前请 Jack 接入 Formspree / Tally / 自建后端。
-            </p>
-            <p class="form-note lang-en" style="color:var(--amber)">
-              <strong>TEMP: form does not submit yet</strong> (action="#" method="get"). Jack must connect Formspree / Tally / backend before public launch.
-            </p>
-            <p id="formMsg" class="form-note" style="display:none;color:var(--amber)" role="status"></p>
-          </form>
+          <p class="form-note lang-cn" style="color:var(--amber);margin-top:1rem">
+            <strong>诚实说明：</strong>日历接入前不会自动预约。按钮会打开邮件（请 Jack 把 <code>⟦JACK_EMAIL⟧</code> 换成真实邮箱；或改 Tally/社群）。演示为沙盒流程，不承诺当场接通你的客户渠道。
+          </p>
+          <p class="form-note lang-en" style="color:var(--amber);margin-top:1rem">
+            <strong>Honest note:</strong> Nothing auto-books until calendar is live. The button opens email (Jack must replace <code>⟦JACK_EMAIL⟧</code>, or point to Tally/community). Demo = sandbox. We do not promise same-day hookup to your customer channels.
+          </p>
         </div>
 
         <!-- Always-visible EN short block when CN primary (toggle still available) -->
@@ -702,7 +690,7 @@
             <div><strong>Starter</strong>$500/mo or ¥3500/mo · 1–2 channels, templates, weekly tune-up</div>
             <div><strong>Growth</strong>$1000/mo or ¥7000/mo · multi-channel, A/B replies, monthly snapshot</div>
             <div><strong>Boundary</strong>AI first reply under approved scripts; humans close money. No guaranteed job volume.</div>
-            <div><strong>CTA</strong><a href="#demo">Book a 3-minute live demo</a> · <button type="button" class="lang-toggle" onclick="setLang('en')" style="margin-left:0.25rem">Full EN page</button></div>
+            <div><strong>CTA</strong><a href="#demo">Watch sandbox demo / request live 15-min</a> · <button type="button" class="lang-toggle" onclick="setLang('en')" style="margin-left:0.25rem">Full EN page</button></div>
           </div>
         </div>
       </div>
@@ -739,16 +727,6 @@
         if (el) el.scrollIntoView();
       }
     })();
-    function handleWaitlist(e) {
-      e.preventDefault();
-      var msg = document.getElementById('formMsg');
-      var isEn = document.body.classList.contains('en');
-      msg.style.display = 'block';
-      msg.textContent = isEn
-        ? 'TEMP: form does not submit yet. Fields captured in this browser only — Jack must connect Formspree/backend before public launch.'
-        : 'TEMP：表单尚未真正提交。字段仅在本页提示，Jack 需接入 Formspree/后端后才能正式收集预约。';
-      return false;
-    }
   </script>
 </body>
 </html>
