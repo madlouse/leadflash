@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="LeadFlash 沙盒演示 — 模拟家装线索 → 约 60 秒 AI 草稿 → 人工确认 → 发送。非真实客户收件箱。" />
+  <title>LeadFlash — 沙盒演示 / Sandbox Demo</title>
+  <style>
+    :root {
+      --amber: #FFB020;
+      --amber-dim: #E09A10;
+      --slate: #0F172A;
+      --slate-soft: #1E293B;
+      --muted: #64748B;
+      --line: #E2E8F0;
+      --bg: #FFFFFF;
+      --bg-alt: #F8FAFC;
+      --ok: #0F766E;
+      --danger: #B91C1C;
+      --radius: 12px;
+      --shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+      --max: 720px;
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      color: var(--slate);
+      background: var(--bg-alt);
+      line-height: 1.65;
+      font-size: 16px;
+    }
+    a { color: var(--slate); text-decoration: none; }
+    .wrap { width: min(100% - 1.5rem, var(--max)); margin-inline: auto; }
+    .lang-en { display: none; }
+    body.en .lang-cn { display: none; }
+    body.en .lang-en { display: block; }
+    body.en span.lang-en { display: inline; }
+    body.en .inline-en { display: inline; }
+    .inline-en { display: none; }
+
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 0; gap: 0.75rem;
+    }
+    .logo {
+      font-weight: 800; font-size: 1.05rem; letter-spacing: -0.02em;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .logo-mark {
+      width: 1.35rem; height: 1.35rem; border-radius: 6px;
+      background: linear-gradient(135deg, var(--amber), #FF6B00);
+      display: inline-block;
+      box-shadow: 0 0 0 3px rgba(255,176,32,0.25);
+    }
+    .nav-right { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; justify-content: flex-end; }
+    .nav-right a { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+    .nav-right a:hover { color: var(--slate); }
+    .lang-toggle {
+      border: 1px solid var(--line); background: var(--bg-alt);
+      border-radius: 999px; padding: 0.25rem 0.65rem;
+      font-size: 0.8rem; cursor: pointer; color: var(--slate); font-weight: 600;
+    }
+    .lang-toggle:hover { border-color: var(--amber); }
+
+    .sandbox-banner {
+      background: #FFF8EB;
+      border-bottom: 2px solid var(--amber);
+      padding: 0.7rem 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--slate-soft);
+    }
+    .sandbox-banner strong { color: var(--amber-dim); }
+    .sandbox-banner .sub {
+      display: block; font-weight: 500; color: var(--muted); font-size: 0.8rem; margin-top: 0.15rem;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 0.35rem; padding: 0.7rem 1.15rem;
+      border-radius: 999px; font-weight: 700; font-size: 0.95rem;
+      border: 2px solid transparent; cursor: pointer;
+      transition: transform 0.15s, background 0.15s, border-color 0.15s, opacity 0.15s;
+      font-family: inherit;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+    .btn-primary { background: var(--slate); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--slate-soft); }
+    .btn-secondary { background: transparent; border-color: var(--line); color: var(--slate); }
+    .btn-secondary:hover:not(:disabled) { border-color: var(--slate); }
+    .btn-amber { background: var(--amber); color: var(--slate); }
+    .btn-amber:hover:not(:disabled) { background: var(--amber-dim); }
+    .btn-ghost { background: #fff; border-color: var(--line); color: var(--muted); font-size: 0.85rem; padding: 0.45rem 0.85rem; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1rem; }
+
+    main { padding: 1.25rem 0 3rem; }
+    h1 {
+      font-size: clamp(1.35rem, 4vw, 1.75rem);
+      letter-spacing: -0.02em; line-height: 1.3; margin-bottom: 0.35rem;
+    }
+    .page-lead { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.25rem; max-width: 40rem; }
+
+    .panel {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.15rem 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .panel h2 {
+      font-size: 0.95rem;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.75rem;
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .badge {
+      display: inline-flex; align-items: center;
+      font-size: 0.7rem; font-weight: 800; letter-spacing: 0.03em;
+      text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 999px;
+    }
+    .badge-idle { background: var(--bg-alt); color: var(--muted); }
+    .badge-run { background: rgba(255,176,32,0.18); color: var(--amber-dim); }
+    .badge-ok { background: rgba(15,118,110,0.12); color: var(--ok); }
+    .badge-warn { background: #FEE2E2; color: var(--danger); }
+
+    .status-bar {
+      display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem;
+      align-items: center; font-size: 0.9rem; margin-bottom: 0.85rem;
+    }
+    .timer {
+      font-variant-numeric: tabular-nums;
+      font-weight: 800; font-size: 1.35rem; letter-spacing: -0.02em;
+    }
+    .timer.under { color: var(--ok); }
+    .timer.over { color: var(--danger); }
+    .status-label { color: var(--muted); font-size: 0.85rem; }
+
+    .lead-msg {
+      background: var(--bg-alt);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
+    }
+    .lead-meta {
+      display: flex; flex-wrap: wrap; gap: 0.5rem 1rem;
+      font-size: 0.8rem; color: var(--muted); margin-bottom: 0.55rem;
+    }
+    .lead-meta strong { color: var(--slate); }
+    .lead-body { font-size: 1rem; font-weight: 600; }
+
+    .draft-box {
+      width: 100%;
+      min-height: 9rem;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      resize: vertical;
+      color: var(--slate);
+      background: #fff;
+    }
+    .draft-box:focus { outline: 2px solid rgba(255,176,32,0.45); border-color: var(--amber); }
+    .disclosure {
+      margin-top: 0.65rem;
+      padding: 0.65rem 0.85rem;
+      background: #FFF8EB;
+      border-left: 3px solid var(--amber);
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+      color: var(--slate-soft);
+    }
+
+    .qualify {
+      display: grid; gap: 0.45rem; margin-top: 0.75rem;
+      font-size: 0.9rem; color: var(--muted);
+    }
+    .qualify li { list-style: none; padding: 0.35rem 0; border-bottom: 1px solid var(--line); }
+    .qualify li:last-child { border-bottom: 0; }
+    .qualify li::before { content: "→ "; color: var(--amber-dim); font-weight: 800; }
+
+    .success-box {
+      display: none;
+      background: rgba(15,118,110,0.08);
+      border: 1px solid rgba(15,118,110,0.35);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 0.85rem;
+    }
+    .success-box.show { display: block; }
+    .success-box h3 { color: var(--ok); font-size: 1rem; margin-bottom: 0.35rem; }
+    .success-box p { color: var(--slate-soft); font-size: 0.9rem; }
+
+    .pending-row {
+      margin-top: 0.75rem;
+      padding: 0.75rem 0.9rem;
+      background: #fff;
+      border: 1px dashed var(--ok);
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .pending-row strong { display: block; margin-bottom: 0.2rem; }
+
+    .escalation {
+      border-color: #FECACA;
+    }
+    .esc-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .esc-table th, .esc-table td {
+      text-align: left; padding: 0.55rem 0.4rem;
+      border-bottom: 1px solid var(--line); vertical-align: top;
+    }
+    .esc-table th { color: var(--muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .esc-table tr:last-child td { border-bottom: 0; }
+    .tag-human {
+      display: inline-block; background: #FEE2E2; color: var(--danger);
+      font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.4rem; border-radius: 4px;
+    }
+
+    .cta-panel {
+      background: var(--slate);
+      color: #fff;
+      border: none;
+    }
+    .cta-panel h2 { color: #fff; font-size: 1.15rem; }
+    .cta-panel p { color: #CBD5E1; font-size: 0.95rem; margin-bottom: 1rem; }
+    .cta-panel .btn-amber { color: var(--slate); }
+    .cta-panel a.back-link { color: #94A3B8; font-size: 0.85rem; text-decoration: underline; }
+
+    .skeleton {
+      height: 1rem; background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+      background-size: 200% 100%; animation: shimmer 1.1s infinite; border-radius: 4px; margin: 0.4rem 0;
+    }
+    .skeleton.w60 { width: 60%; }
+    .skeleton.w80 { width: 80%; }
+    .skeleton.w95 { width: 95%; }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .hidden { display: none !important; }
+    .pulse { animation: pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.55; }
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 1.5rem 0 2rem;
+      font-size: 0.8rem; color: var(--muted); text-align: center;
+    }
+    footer a { color: var(--muted); text-decoration: underline; }
+
+    @media (max-width: 520px) {
+      .esc-table th:nth-child(2), .esc-table td:nth-child(2) { display: none; }
+      .timer { font-size: 1.15rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <a class="logo" href="index.html">
+        <span class="logo-mark" aria-hidden="true"></span>
+        LeadFlash
+      </a>
+      <div class="nav-right">
+        <a class="lang-cn" href="index.html">← 返回首页</a>
+        <a class="lang-en" href="index.html">← Back to home</a>
+        <button type="button" class="lang-toggle" id="langToggle" aria-label="Switch language">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="sandbox-banner" role="status">
+    <div class="wrap">
+      <div class="lang-cn">
+        <strong>沙盒演示 · Sandbox demo</strong> — 这不是真实客户的收件箱 / 电话 / WhatsApp。
+        <span class="sub">所有线索与回复均为模拟数据，仅用于体验「进线 → 草稿 → 审批 → 发送」流程。签约并授权渠道后才会接入你的真实进线。</span>
+      </div>
+      <div class="lang-en">
+        <strong>Sandbox demo</strong> — not a live client inbox, phone, or WhatsApp.
+        <span class="sub">All leads and replies are simulated so you can feel inbound → draft → approve → send. Real channels connect only after signup and your authorization.</span>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <div class="wrap">
+      <h1 class="lang-cn">体验：线索 60 秒首响</h1>
+      <h1 class="lang-en">Try it: 60-second first reply</h1>
+      <p class="page-lead lang-cn">点下方按钮开始。我们会模拟一条水电/暖通上门线索，在约 60 秒目标内生成带披露的草稿，由你编辑并「批准发送」。不涉及付款，也不接通真实渠道。</p>
+      <p class="page-lead lang-en">Hit start below. We’ll simulate a plumber/HVAC lead, generate a disclosed draft under a ~60s target, then let you edit and Approve &amp; send. No payment. No live channels.</p>
+
+      <!-- Step 1: Lead -->
+      <section class="panel" id="panel-lead" aria-labelledby="lead-title">
+        <h2 id="lead-title">
+          <span class="lang-cn">① 模拟进线</span>
+          <span class="lang-en">① Fake inbound lead</span>
+          <span class="badge badge-idle" id="lead-badge">
+            <span class="lang-cn">等待开始</span>
+            <span class="lang-en">Waiting</span>
+          </span>
+        </h2>
+        <div id="lead-empty">
+          <p class="status-label lang-cn">点击开始后，将出现一条家装上门线索（水电 / HVAC）。</p>
+          <p class="status-label lang-en">After you start, a home-service lead (plumber / HVAC) will appear.</p>
+          <div class="btn-row">
+            <button type="button" class="btn btn-amber" id="btnStart">
+              <span class="lang-cn">开始沙盒演示</span>
+              <span class="lang-en">Start sandbox demo</span>
+            </button>
+          </div>
+        </div>
+        <div id="lead-card" class="hidden">
+          <div class="lead-msg">
+            <div class="lead-meta">
+              <span><strong class="lang-cn">渠道</strong><strong class="lang-en">Channel</strong>: <span class="lang-cn">网页表单 · 模拟</span><span class="lang-en">Web form · simulated</span></span>
+              <span><strong class="lang-cn">时间</strong><strong class="lang-en">Time</strong>: <span id="lead-time">23:12</span></span>
+              <span><strong class="lang-cn">行业</strong><strong class="lang-en">Trade</strong>: <span class="lang-cn">水电 / 暖通上门</span><span class="lang-en">Plumber / HVAC</span></span>
+            </div>
+            <p class="lead-body lang-cn">「师傅您好，明天上午能上门看一下厨房下水道吗？在浦东 XX 小区，有点堵，不确定要不要疏通。」— 王先生</p>
+            <p class="lead-body lang-en">“Hi — can someone look at our kitchen drain tomorrow morning? Pudong XX compound, partly clogged, not sure if we need a full snaking.” — Mr. Wang</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: Draft timer -->
+      <section class="panel" id="panel-draft" aria-labelledby="draft-title">
+        <h2 id="draft-title">
+          <span class="lang-cn">② AI 草稿（目标 &lt; 60 秒）</span>
+          <span class="lang-en">② AI draft (target under 60s)</span>
+          <span class="badge badge-idle" id="draft-badge">
+            <span class="lang-cn">未开始</span>
+            <span class="lang-en">Idle</span>
+          </span>
+        </h2>
+        <div class="status-bar">
+          <div>
+            <div class="status-label lang-cn">进线 → 草稿耗时</div>
+            <div class="status-label lang-en">Intake → draft elapsed</div>
+            <div class="timer" id="timer">0.0s</div>
+          </div>
+          <div>
+            <div class="status-label lang-cn">状态</div>
+            <div class="status-label lang-en">Status</div>
+            <div id="status-text" class="status-label" style="color:var(--slate);font-weight:600">
+              <span class="lang-cn">等待进线…</span>
+              <span class="lang-en">Waiting for lead…</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="draft-loading" class="hidden">
+          <div class="skeleton w95"></div>
+          <div class="skeleton w80"></div>
+          <div class="skeleton w60"></div>
+        </div>
+
+        <div id="draft-ready" class="hidden">
+          <label for="draftText" class="status-label" style="display:block;margin-bottom:0.35rem">
+            <span class="lang-cn">可编辑草稿（发送前请人工过目）</span>
+            <span class="lang-en">Editable draft (human reviews before send)</span>
+          </label>
+          <textarea class="draft-box" id="draftText" rows="7" spellcheck="true"></textarea>
+          <div class="disclosure">
+            <span class="lang-cn"><strong>披露：</strong>默认话术标明「助手先回，师傅稍后确认」。草稿<strong>不报死价</strong>、不锁合同、不假装已约好上门。</span>
+            <span class="lang-en"><strong>Disclosure:</strong> Default copy says an assistant replied first and a tech will confirm. Draft has <strong>no hard price</strong>, no contract lock, and no fake “you’re booked.”</span>
+          </div>
+          <ul class="qualify">
+            <li class="lang-cn">建议追问：小区/街道 · 疏通/维修/安装 · 是否正在漏水 · 方便上门时段</li>
+            <li class="lang-en">Suggested qualify: neighborhood · repair vs install · active leak? · preferred slot</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Step 3: Approve -->
+      <section class="panel" id="panel-approve" aria-labelledby="approve-title">
+        <h2 id="approve-title">
+          <span class="lang-cn">③ 人工批准并发送</span>
+          <span class="lang-en">③ Human approve &amp; send</span>
+          <span class="badge badge-idle" id="approve-badge">
+            <span class="lang-cn">待草稿</span>
+            <span class="lang-en">Awaiting draft</span>
+          </span>
+        </h2>
+        <p class="status-label lang-cn" style="margin-bottom:0.5rem">演示中「批准发送」始终开启。生产环境可选人工闸门；试点默认建议开启。</p>
+        <p class="status-label lang-en" style="margin-bottom:0.5rem">Approve &amp; send stays ON in this demo. In production the human gate is optional; we recommend ON for pilots.</p>
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary" id="btnApprove" disabled>
+            <span class="lang-cn">批准并发送</span>
+            <span class="lang-en">Approve &amp; send</span>
+          </button>
+          <button type="button" class="btn btn-ghost" id="btnReset" disabled>
+            <span class="lang-cn">重来一次</span>
+            <span class="lang-en">Replay</span>
+          </button>
+        </div>
+        <div class="success-box" id="successBox" role="status">
+          <h3 class="lang-cn">✓ 已在沙盒中「发送」</h3>
+          <h3 class="lang-en">✓ Sent in sandbox</h3>
+          <p class="lang-cn">回复已写入模拟外发队列。没有真实短信 / 微信 / WhatsApp 发出——这是诚实沙盒。</p>
+          <p class="lang-en">Reply queued in the simulated outbound lane. No real SMS / WeChat / WhatsApp was sent — honest sandbox only.</p>
+          <div class="pending-row">
+            <strong class="lang-cn">待确认预约 · Pending booking</strong>
+            <strong class="lang-en">Pending booking note</strong>
+            <span class="lang-cn">客户偏好：明天上午 10:00–12:00（浦东 XX 小区）→ 进入店主「待确认」列表。你早上一键确认或改期。费用与合同仍由人工处理，不会自动扣款或自动签约。</span>
+            <span class="lang-en">Prospect preference: tomorrow 10:00–12:00 (Pudong XX) → sits in owner “pending confirm.” You confirm or reschedule in the morning. Money and contracts stay human — no auto-charge, no auto-contract.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: Escalation -->
+      <section class="panel escalation" id="panel-esc" aria-labelledby="esc-title">
+        <h2 id="esc-title">
+          <span class="lang-cn">④ 人工接管卡（价格 / 合同 / 安全）</span>
+          <span class="lang-en">④ Escalation card (price / contract / safety)</span>
+          <span class="badge badge-warn">
+            <span class="lang-cn">AI 止步</span>
+            <span class="lang-en">AI stops</span>
+          </span>
+        </h2>
+        <p class="status-label lang-cn" style="margin-bottom:0.75rem">以下任一触发 → 自动化停止，转交师傅/店长。演示里始终展示此边界，避免「AI 关单」幻觉。</p>
+        <p class="status-label lang-en" style="margin-bottom:0.75rem">Any row below → automation stops and a human takes over. Shown in every demo so we never imply AI closes money.</p>
+        <table class="esc-table">
+          <thead>
+            <tr>
+              <th class="lang-cn">触发</th>
+              <th class="lang-en">Trigger</th>
+              <th class="lang-cn">处理</th>
+              <th class="lang-en">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="lang-cn">谈价格、砍价、要一口价</td>
+              <td class="lang-en">Price haggling / hard quote</td>
+              <td><span class="tag-human">HUMAN</span> <span class="lang-cn">人工报价</span><span class="lang-en">Human quotes</span></td>
+            </tr>
+            <tr>
+              <td class="lang-cn">合同、定金、收款码、对公账户</td>
+              <td class="lang-en">Contract, deposit, payment details</td>
+              <td><span class="tag-human">HUMAN</span> <span class="lang-cn">法律与资金风险</span><span class="lang-en">Legal &amp; fraud risk</span></td>
+            </tr>
+            <tr>
+              <td class="lang-cn">燃气、大面积漏水漏电、结构隐患</td>
+              <td class="lang-en">Gas, major leak/electrical, structural</td>
+              <td><span class="tag-human">HUMAN</span> <span class="lang-cn">需持证判断</span><span class="lang-en">Licensed judgment</span></td>
+            </tr>
+            <tr>
+              <td class="lang-cn">投诉、差评威胁、明确要求找真人</td>
+              <td class="lang-en">Complaints / “get me a real person”</td>
+              <td><span class="tag-human">HUMAN</span> <span class="lang-cn">信任优先</span><span class="lang-en">Trust first</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="disclosure" style="margin-top:0.85rem">
+          <span class="lang-cn">转人时可发一句：「已转交师傅/店长，稍后与您确认。」之后 AI <strong>保持沉默</strong>，不继续推销或锁档期。</span>
+          <span class="lang-en">On escalate, one line is OK: “Handed to the tech/owner — they’ll confirm shortly.” Then AI <strong>stays silent</strong> — no more pitching or locking slots.</span>
+        </p>
+      </section>
+
+      <!-- CTA -->
+      <section class="panel cta-panel" id="panel-cta">
+        <h2 class="lang-cn">下一步：请求真人讲解</h2>
+        <h2 class="lang-en">Next: request a live walkthrough</h2>
+        <p class="lang-cn">看完沙盒后，如需对照你的真实渠道（表单 / 邮件 / SMS / WhatsApp 等）走一遍，发邮件约 <strong>15 分钟</strong>线上会。我们人工回信安排 Meet/Zoom——本页不会自动预约成功。</p>
+        <p class="lang-en">After the sandbox, email us for a <strong>15-minute</strong> walkthrough against your real channels (form / email / SMS / WhatsApp, etc.). We reply manually to schedule Meet/Zoom — this page does not auto-book.</p>
+        <div class="btn-row" style="margin-top:0">
+          <a class="btn btn-amber" href="mailto:jeking.hwang2025@gmail.com?subject=LeadFlash%20demo%20request&body=Shop%20/%20%E5%BA%97%E5%90%8D%3A%0ACity%20/%20%E5%9F%8E%E5%B8%82%3A%0APrimary%20channel%20%28form%20/%20email%20/%20SMS%20/%20WhatsApp%20/%20other%29%3A%0AInterest%3A%20Starter%20/%20Growth%20/%20unsure%0APreferred%20times%20%28Asia/Shanghai%29%3A%0ANotes%3A%0A">
+            <span class="lang-cn">请求线上演示</span>
+            <span class="lang-en">Request live walkthrough</span>
+          </a>
+          <a class="btn btn-secondary" href="index.html" style="border-color:#475569;color:#E2E8F0">
+            <span class="lang-cn">返回首页</span>
+            <span class="lang-en">Back to index</span>
+          </a>
+        </div>
+        <p style="margin-top:1rem;font-size:0.8rem;color:#94A3B8">
+          <span class="lang-cn">邮件至 jeking.hwang2025@gmail.com · 主题已预填 LeadFlash demo request · 无付款链接</span>
+          <span class="lang-en">Email jeking.hwang2025@gmail.com · subject prefilled LeadFlash demo request · no payment links</span>
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p class="lang-cn">LeadFlash 沙盒 · 不承诺线索量或营收 · <a href="index.html">返回 index.html</a></p>
+      <p class="lang-en">LeadFlash sandbox · no lead-volume or revenue promises · <a href="index.html">Back to index.html</a></p>
+      <p style="margin-top:0.5rem">© 2026 LeadFlash · Brand provisional</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var DRAFT_CN =
+        '您好，这里是「迅达水电」助手，已收到您的消息，师傅会尽快确认。\n\n' +
+        '为了安排上门，想了解：\n' +
+        '① 大概位置（小区/街道）——您提到浦东 XX 小区，对吗？\n' +
+        '② 是疏通、维修还是安装？\n' +
+        '③ 是否正在漏水/紧急？\n' +
+        '④ 明天上午还是下午更方便？\n\n' +
+        '请直接回复序号或文字即可。具体费用需师傅现场评估后报价，我们不会在首响报死价。';
+
+      var DRAFT_EN =
+        'Hi — this is the “Xunda Plumbing” assistant. We got your message and a tech will confirm shortly.\n\n' +
+        'Quick questions so we can schedule:\n' +
+        '(1) Neighborhood / street — you mentioned Pudong XX compound, correct?\n' +
+        '(2) Snaking / repair / install?\n' +
+        '(3) Active leak or urgent?\n' +
+        '(4) Morning or afternoon tomorrow?\n\n' +
+        'Reply with numbers or a short note. Pricing comes after an on-site look — we never hard-quote in the first reply.';
+
+      var DRAFT_DELAY_MS = 2800; // short simulated delay; timer still shows under 60s target
+      var timerInterval = null;
+      var startTs = 0;
+      var draftReady = false;
+
+      function isEn() { return document.body.classList.contains('en'); }
+
+      function setLang(wh) {
+        var en = wh === 'en';
+        document.body.classList.toggle('en', en);
+        var btn = document.getElementById('langToggle');
+        if (btn) btn.textContent = en ? '中文' : 'EN';
+        try { localStorage.setItem('lf-lang', en ? 'en' : 'cn'); } catch (e) {}
+        if (draftReady) {
+          var ta = document.getElementById('draftText');
+          // Only swap if user hasn't customized, or if content matches the other lang template
+          var cur = ta.value.trim();
+          if (!cur || cur === DRAFT_CN.trim() || cur === DRAFT_EN.trim()) {
+            ta.value = en ? DRAFT_EN : DRAFT_CN;
+          }
+        }
+      }
+
+      function setBadge(el, kind, cn, en) {
+        el.className = 'badge badge-' + kind;
+        el.innerHTML = '<span class="lang-cn">' + cn + '</span><span class="lang-en">' + en + '</span>';
+      }
+
+      function setStatus(cn, en, pulsing) {
+        var el = document.getElementById('status-text');
+        el.innerHTML = '<span class="lang-cn">' + cn + '</span><span class="lang-en">' + en + '</span>';
+        el.classList.toggle('pulse', !!pulsing);
+      }
+
+      function formatElapsed(ms) {
+        return (ms / 1000).toFixed(1) + 's';
+      }
+
+      function stopTimer() {
+        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      }
+
+      function resetDemo() {
+        stopTimer();
+        draftReady = false;
+        startTs = 0;
+        document.getElementById('timer').textContent = '0.0s';
+        document.getElementById('timer').className = 'timer';
+        document.getElementById('lead-empty').classList.remove('hidden');
+        document.getElementById('lead-card').classList.add('hidden');
+        document.getElementById('draft-loading').classList.add('hidden');
+        document.getElementById('draft-ready').classList.add('hidden');
+        document.getElementById('draftText').value = '';
+        document.getElementById('btnApprove').disabled = true;
+        document.getElementById('btnReset').disabled = true;
+        document.getElementById('btnStart').disabled = false;
+        document.getElementById('successBox').classList.remove('show');
+        setBadge(document.getElementById('lead-badge'), 'idle', '等待开始', 'Waiting');
+        setBadge(document.getElementById('draft-badge'), 'idle', '未开始', 'Idle');
+        setBadge(document.getElementById('approve-badge'), 'idle', '待草稿', 'Awaiting draft');
+        setStatus('等待进线…', 'Waiting for lead…', false);
+      }
+
+      function startDemo() {
+        resetDemo();
+        document.getElementById('btnStart').disabled = true;
+        document.getElementById('btnReset').disabled = false;
+
+        // Show lead
+        var now = new Date();
+        var hh = String(now.getHours()).padStart(2, '0');
+        var mm = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('lead-time').textContent = hh + ':' + mm;
+        document.getElementById('lead-empty').classList.add('hidden');
+        document.getElementById('lead-card').classList.remove('hidden');
+        setBadge(document.getElementById('lead-badge'), 'ok', '已进线', 'Inbound');
+
+        // Start draft timer
+        startTs = performance.now();
+        setBadge(document.getElementById('draft-badge'), 'run', '生成中', 'Drafting');
+        setStatus('正在生成带披露的首响草稿…', 'Generating disclosed first-reply draft…', true);
+        document.getElementById('draft-loading').classList.remove('hidden');
+
+        var timerEl = document.getElementById('timer');
+        timerInterval = setInterval(function () {
+          var elapsed = performance.now() - startTs;
+          timerEl.textContent = formatElapsed(elapsed);
+          timerEl.className = 'timer ' + (elapsed < 60000 ? 'under' : 'over');
+        }, 50);
+
+        setTimeout(function () {
+          stopTimer();
+          var elapsed = performance.now() - startTs;
+          timerEl.textContent = formatElapsed(elapsed);
+          timerEl.className = 'timer under';
+          document.getElementById('draft-loading').classList.add('hidden');
+          document.getElementById('draft-ready').classList.remove('hidden');
+          document.getElementById('draftText').value = isEn() ? DRAFT_EN : DRAFT_CN;
+          draftReady = true;
+          setBadge(document.getElementById('draft-badge'), 'ok', '草稿就绪', 'Draft ready');
+          setBadge(document.getElementById('approve-badge'), 'run', '待审批', 'Needs approval');
+          setStatus('草稿已就绪（模拟耗时远低于 60 秒目标）', 'Draft ready (simulated well under 60s target)', false);
+          document.getElementById('btnApprove').disabled = false;
+          document.getElementById('draftText').focus();
+        }, DRAFT_DELAY_MS);
+      }
+
+      function approveSend() {
+        if (!draftReady) return;
+        document.getElementById('btnApprove').disabled = true;
+        document.getElementById('successBox').classList.add('show');
+        setBadge(document.getElementById('approve-badge'), 'ok', '已发送', 'Sent');
+        setStatus('沙盒发送完成 · 预约待店主确认', 'Sandbox send done · booking pending owner confirm', false);
+        document.getElementById('successBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      document.getElementById('btnStart').addEventListener('click', startDemo);
+      document.getElementById('btnApprove').addEventListener('click', approveSend);
+      document.getElementById('btnReset').addEventListener('click', function () {
+        resetDemo();
+        document.getElementById('btnStart').disabled = false;
+      });
+
+      (function initLang() {
+        var saved = null;
+        try { saved = localStorage.getItem('lf-lang'); } catch (e) {}
+        setLang(saved === 'en' ? 'en' : 'cn');
+        var btn = document.getElementById('langToggle');
+        if (btn) btn.addEventListener('click', function () {
+          setLang(document.body.classList.contains('en') ? 'cn' : 'en');
+        });
+      })();
+    })();
+  </script>
+</body>
+</html>
